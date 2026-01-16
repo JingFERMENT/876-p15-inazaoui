@@ -10,7 +10,8 @@ use App\Repository\MediaRepository;
 use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
 {
@@ -23,7 +24,8 @@ class HomeController extends AbstractController
     #[Route('/guests', name: 'guests')]
     public function guests(UserRepository $users)
     {
-        $guests = $users->findBy(['admin' => false]);
+       
+        $guests = $users->findGuests();
         return $this->render('front/guests.html.twig', [
             'guests' => $guests
         ]);
@@ -37,18 +39,20 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/portfolio/{id}', name: 'portfolio', defaults: ['id' => null])]
+    #[Route('/portfolio/{id}', name: 'portfolio', defaults: ['id' => null], requirements: ['id' => '\d+'])]
     public function portfolio(
         AlbumRepository $albumsRepo,
-        UserRepository $usersRepo,
         MediaRepository $mediasRepo,
+        Security $security,
         #[MapEntity(id: 'id')] ?Album $album = null,
     ) {
         $albums = $albumsRepo->findAll();
-        $user = $usersRepo->findOneByAdmin(true);
+
+        $user = $security->getUser();
+        // dd($user);
 
         if (!$user) {
-            throw $this->createNotFoundException('Admin user not found.');
+            throw $this->createAccessDeniedException('Vous devez vous identifier.');;
         }
         $medias = $album
             ? $mediasRepo->findByAlbum($album)
