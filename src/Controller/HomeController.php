@@ -22,10 +22,10 @@ class HomeController extends AbstractController
     }
 
     #[Route('/guests', name: 'guests')]
-    public function guests(UserRepository $users)
+    public function guests(UserRepository $userRepository)
     {
        
-        $guests = $users->findGuests();
+        $guests = $userRepository->findGuests();
         return $this->render('front/guests.html.twig', [
             'guests' => $guests
         ]);

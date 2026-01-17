@@ -113,16 +113,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    // public function getMedias(): Collection
-    // {
-    //     return $this->medias;
-    // }
-
-    // public function setMedias(Collection $medias): static
-    // {
-    //     $this->medias = $medias;
-    //     return $this;
-    // }
+    public function getMedias(): Collection
+    {
+        return $this->medias;
+    }
 
     public function addMedia(Media $media): static
     {
