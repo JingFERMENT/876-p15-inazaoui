@@ -3,9 +3,12 @@
 {% block body %}
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-none d-md-block bg-dark sidebar min-vh-100 p-4">
+            <nav class="col-md-3 col-lg-2 d-none d-md-flex flex-column bg-dark sidebar min-vh-100 p-4">
+                <a class="text-white btn btn-primary mb-3" href="{{ path('home') }}">
+                Retour à la page accueil
+                </a>
                 <div class="position-sticky">
-                    <h1 class="text-white">Admin</h1>
+                    <h1 class="text-white">Dashboard</h1>
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('admin_media_index') }}">
@@ -24,7 +27,7 @@
                                 </a>
                             </li>
                         {% endif %}
-                    </ul>
+                    </ul>  
                 </div>
             </nav>
             <main class="col-md-9 ms-sm-auto col-lg-10 p-4">

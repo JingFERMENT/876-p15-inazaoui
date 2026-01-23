@@ -30,7 +30,7 @@ class MediaController extends AbstractController
             25,
             25 * ($page - 1)
         );
-        $total = $media->count([]);
+        $total = $media->count($criteria);
 
         return $this->render('admin/media/index.html.twig', [
             'medias' => $medias,
