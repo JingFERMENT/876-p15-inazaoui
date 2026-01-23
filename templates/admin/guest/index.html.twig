@@ -20,18 +20,25 @@
                     <td>{{ guest.name }}</td>
                      <td>{{ guest.email }}</td>
                       {% if guest.isActive %}
-                      <td>Active</td>
-                      {% else %}
-                      <td>Bloqué</td>
-                      {% endif %}
-                     {% if guest.isActive %}
-                      <td>
-                        <a href="" class="btn btn-warning">Bloquer</a>
+                      <td class="text-success">Actif</td>
+                      <td class="d-flex gap-2">
+                        <form method="post" 
+                            action="{{ path('admin_guest_disable', {id: guest.id}) }}"
+                            onsubmit="return confirm('Bloquer cet invité ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('guest_disable_' ~ guest.id) }}">
+                            <button class="btn btn-warning" type="submit">Bloquer</button>
+                        </form>
                         <a href="" class="btn btn-danger">Supprimer</a>
                       </td>
                       {% else %}
-                      <td>
-                      <a href="" class="btn btn-success">Débloquer</a>
+                      <td class="text-danger">Bloqué</td>
+                      <td class="d-flex gap-2">
+                      <form method="post"
+                        action="{{ path('admin_guest_enable', {id: guest.id}) }}"
+                        onsubmit="return confirm('Débloquer cet invité ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('guest_enable_' ~ guest.id) }}">
+                        <button class="btn btn-success" type="submit">Débloquer</button>
+</form>
                       <a href="" class="btn btn-danger">Supprimer</a>
                       </td>
                       {% endif %}
