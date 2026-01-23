@@ -24,18 +24,22 @@ class MediaController extends AbstractController
             $criteria['user'] = $this->getUser();
         }
 
+        $limit = 8;
+        $offset = 8 * ($page - 1);
+        
         $medias = $media->findBy(
             $criteria,
             ['id' => 'ASC'],
-            8,
-            8 * ($page - 1)
+            $limit,
+            $offset
         );
         $total = $media->count($criteria);
 
         return $this->render('admin/media/index.html.twig', [
             'medias' => $medias,
             'total' => $total,
-            'page' => $page
+            'page' => $page,
+            'limit' => $limit
         ]);
     }
 

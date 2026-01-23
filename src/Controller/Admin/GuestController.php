@@ -19,24 +19,23 @@ final class GuestController extends AbstractController
     public function index(Request $request, UserRepository $userRepository): Response
     {
         $page = $request->query->getInt('page', 1);
-
+       
         $criteria = [];
-
-        $guests = $userRepository->findBy(
-            $criteria,
-            ['id' => 'ASC'],
-            9,
-            9 * ($page - 1)
-        );
-
+        
+        $limit = 9;
+        $offset = $limit * ($page - 1);
+        
+        $guests = $userRepository->findGuests($limit, $offset);
+        
         $total = $userRepository->count($criteria);
-
+        
         return $this->render(
             '/admin/guest/index.html.twig',
             [
                 'guests' => $guests,
                 'total' => $total,
-                'page' => $page
+                'page' => $page,
+                'limit' => $limit
             ]
         );
     }

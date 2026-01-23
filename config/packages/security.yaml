@@ -17,6 +17,7 @@ security:
                 login_path: admin_login
                 check_path: admin_login
                 enable_csrf: true
+            user_checker: App\Security\UserChecker
             logout:
                 path: app_logout
     role_hierarchy:
