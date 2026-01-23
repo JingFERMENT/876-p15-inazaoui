@@ -61,6 +61,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $description = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L’email est obligatoire.")]
+    #[Assert\Email(message: "Merci de saisir un email valide.")]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: "L’email ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $email = null;
 
     #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'user')]

@@ -27,8 +27,8 @@ class MediaController extends AbstractController
         $medias = $media->findBy(
             $criteria,
             ['id' => 'ASC'],
-            25,
-            25 * ($page - 1)
+            8,
+            8 * ($page - 1)
         );
         $total = $media->count($criteria);
 
