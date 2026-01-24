@@ -69,7 +69,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $email = null;
 
-    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $medias;
 
     #[ORM\Column(options: ['default' => true])]
@@ -137,9 +137,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeMedia(Media $media): static
     {
         if ($this->medias->removeElement($media)) {
-            if ($media->getUser() === $this) {
-                $media->setUser(null);
-            }
+            
         }
 
         return $this;

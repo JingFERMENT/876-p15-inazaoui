@@ -66,7 +66,7 @@ class MediaController extends AbstractController
     }
 
     #[Route('/admin/media/delete/{id}', name: 'admin_media_delete')]
-    public function delete(#[MapEntity(id: 'id')] Media $media, EntityManagerInterface $em)
+    public function delete(Media $media, EntityManagerInterface $em)
     {
         $em->remove($media);
         $em->flush();
