@@ -40,7 +40,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findGuests(int $limit, int $offset): array
+    public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
     {
         $connection = $this->getEntityManager()->getConnection();
 
@@ -49,21 +49,24 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ['admin' => '["ROLE_ADMIN"]']
         );
 
-        
-
         if ($ids === []) {
             return [];
         }
-        return $this->createQueryBuilder('u')
+
+        $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')
             ->setParameter('ids', $ids)
             ->orderBy('u.id', 'ASC')
             ->setMaxResults($limit)
-            ->setFirstResult($offset)
-            ->getQuery()
-            ->getResult();
-    }
+            ->setFirstResult($offset);
 
+        if ($onlyActive) {
+            $qb->andWhere('u.isActive = true');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+    
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

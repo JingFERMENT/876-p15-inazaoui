@@ -11,6 +11,7 @@ use App\Repository\UserRepository;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends AbstractController
@@ -22,12 +23,23 @@ class HomeController extends AbstractController
     }
 
     #[Route('/guests', name: 'guests')]
-    public function guests(UserRepository $userRepository)
+    public function guests(Request $request, UserRepository $userRepository)
     {
-       
-        $guests = $userRepository->findGuests();
+        $criteria = [];
+
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
+        $offset = $limit * ($page - 1);
+        $onlyActive = true;
+
+        $guests = $userRepository->findGuests($limit, $offset, $onlyActive);
+        $total = $userRepository->count($criteria);
+        
         return $this->render('front/guests.html.twig', [
-            'guests' => $guests
+            'guests' => $guests,
+            'total' => $total,
+            'limit' => $limit,
+            'page'=> $page
         ]);
     }
 
