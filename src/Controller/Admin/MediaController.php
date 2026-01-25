@@ -6,7 +6,6 @@ use App\Entity\Media;
 use App\Form\MediaType;
 use App\Repository\MediaRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,18 +23,22 @@ class MediaController extends AbstractController
             $criteria['user'] = $this->getUser();
         }
 
+        $limit = 8;
+        $offset = 8 * ($page - 1);
+        
         $medias = $media->findBy(
             $criteria,
             ['id' => 'ASC'],
-            25,
-            25 * ($page - 1)
+            $limit,
+            $offset
         );
         $total = $media->count($criteria);
 
         return $this->render('admin/media/index.html.twig', [
             'medias' => $medias,
             'total' => $total,
-            'page' => $page
+            'page' => $page,
+            'limit' => $limit
         ]);
     }
 
@@ -62,7 +65,7 @@ class MediaController extends AbstractController
     }
 
     #[Route('/admin/media/delete/{id}', name: 'admin_media_delete')]
-    public function delete(#[MapEntity(id: 'id')] Media $media, EntityManagerInterface $em)
+    public function delete(Media $media, EntityManagerInterface $em)
     {
         $em->remove($media);
         $em->flush();

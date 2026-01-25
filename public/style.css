@@ -2,7 +2,8 @@
     font-family: "DM Mono", monospace;
 }
 
-html, body {
+html,
+body {
     background: #DFECF0;
 }
 
@@ -24,7 +25,8 @@ h2 {
     margin: 0;
 }
 
-.home-title, h3 {
+.home-title,
+h3 {
     font-size: 24px;
     font-weight: 400;
     line-height: 31.25px;
@@ -46,7 +48,8 @@ p {
     font-family: "DM Sans", sans-serif;
 }
 
-.btn:hover, .btn.active {
+.btn:hover,
+.btn.active {
     color: white;
     background: #333;
 }
@@ -94,6 +97,13 @@ a {
 .media-title {
     font-size: 14px;
     font-family: "DM Sans", sans-serif;
+}
+
+.my-pagination .page-item.active .page-link {
+    font-style: normal;
+    font-weight: 700;
+    text-decoration: underline;
+
 }
 
 footer {

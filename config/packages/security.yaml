@@ -17,11 +17,13 @@ security:
                 login_path: admin_login
                 check_path: admin_login
                 enable_csrf: true
+            user_checker: App\Security\UserChecker
             logout:
                 path: app_logout
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER
     access_control:
+        - { path: ^/set-password, roles: PUBLIC_ACCESS}
         - { path: ^/admin/media, roles: ROLE_USER }
         - { path: ^/admin, roles: ROLE_ADMIN }
 

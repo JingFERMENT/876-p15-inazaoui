@@ -40,12 +40,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findGuests(): array
+    public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
     {
-        $conn = $this->getEntityManager()->getConnection();
+        $connection = $this->getEntityManager()->getConnection();
 
-        // 1) get matching user IDs with proper jsonb containment
-        $ids = $conn->fetchFirstColumn(
+        $ids = $connection->fetchFirstColumn(
             'SELECT id FROM "user" WHERE NOT (roles @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
@@ -54,14 +53,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             return [];
         }
 
-        // 2) load entities with Doctrine (so you still return User objects)
-        return $this->createQueryBuilder('u')
+        $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')
             ->setParameter('ids', $ids)
-            ->getQuery()
-            ->getResult();
-    }
+            ->orderBy('u.id', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
 
+        if ($onlyActive) {
+            $qb->andWhere('u.isActive = true');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+    
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

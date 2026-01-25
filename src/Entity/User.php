@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -22,9 +23,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    // #[ORM\Column]
-    // private bool $admin = false;
-
     #[ORM\Column]
     #[Assert\NotBlank(
         message: "Le nom est obligatoire."
@@ -43,40 +41,70 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
-    #[Assert\NotBlank(message: "Merci de saisir un mot de passe.")]
-    #[Assert\Length(
-        min: 8,
-        minMessage: "Votre mot de passe doit contenir au moins {{ limit }} caractères.",
-        max: 4096
-    )]
     private ?string $plainPassword = null;
 
     /**
      * @var string The hashed password
      */
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $password = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L’email est obligatoire.")]
+    #[Assert\Email(message: "Merci de saisir un email valide.")]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: "L’email ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $email = null;
 
-    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'user')]
+    #[ORM\OneToMany(targetEntity: Media::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $medias;
 
     #[ORM\Column(options: ['default' => true])]
     private bool $isActive = true;
+
+    #[ORM\Column (length:64, unique: true, nullable: true)]
+    private ?string $invitationToken = null;
+
+    #[ORM\Column (nullable : true)]
+    private ?DateTimeImmutable $invitationExpiredAt = null;
 
     public function __construct()
     {
         $this->medias = new ArrayCollection();
     }
 
-    public function getId(): ?int
+     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getInvitationToken(): ?string
+    {
+        return $this->invitationToken;
+    }
+
+    public function setInvitationToken(?string $invitationToken): static
+    {
+        $this->invitationToken = $invitationToken;
+
+        return $this;
+    }
+
+    public function getInvitationExpiredAt(): ?DateTimeImmutable
+    {
+        return $this->invitationExpiredAt;
+    }
+
+     public function setInvitationExpiredAt(?DateTimeImmutable $invitationExpiredAt): static
+    {
+        $this->invitationExpiredAt = $invitationExpiredAt;
+
+        return $this;
     }
 
     public function getEmail(): ?string
@@ -131,9 +159,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeMedia(Media $media): static
     {
         if ($this->medias->removeElement($media)) {
-            if ($media->getUser() === $this) {
-                $media->setUser(null);
-            }
+            
         }
 
         return $this;
