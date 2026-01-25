@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Album;
-use App\Entity\Media;
 use App\Entity\User;
 use App\Repository\AlbumRepository;
 use App\Repository\MediaRepository;

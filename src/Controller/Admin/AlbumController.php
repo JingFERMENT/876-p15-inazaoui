@@ -3,9 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Album;
-use App\Entity\Media;
 use App\Form\AlbumType;
-use App\Form\MediaType;
 use App\Repository\AlbumRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
