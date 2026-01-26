@@ -160,7 +160,8 @@ final class GuestController extends AbstractController
             || !$guest->getInvitationExpiredAt()
             || $guest->getInvitationExpiredAt() < new DateTimeImmutable()
         ) {
-            throw $this->createNotFoundException('Invitation invalide ou expirée.');
+            $this->addFlash('danger', 'Invitation invalide ou expirée.');
+        
         }
 
         $form = $this->createForm(SetPasswordType::class, $guest);
