@@ -24,20 +24,20 @@ class AppFixtures extends Fixture
 
         // album 1...5
         $albums = [];
-        for($i = 1; $i<= 5; $i++){
-            $albums []= AlbumFactory::createOne(['name'=> 'Album '. $i]);
+        for ($i = 1; $i <= 5; $i++) {
+            $albums[] = AlbumFactory::createOne(['name' => 'Album ' . $i]);
         };
 
         // each media has a user, but 50% times has a media
-        MediaFactory::createMany(100,function() use ($guests, $albums){
-            $hasAlbum = random_int(1,10) <= 5;
+        MediaFactory::createMany(100, function () use ($guests, $albums) {
+            $hasAlbum = random_int(1, 10) <= 5;
 
             return [
                 'user' => $guests[array_rand($guests)],
                 'album' => $hasAlbum ? $albums[array_rand($albums)] : null,
             ];
         });
-        
+
         $manager->flush();
     }
 }
