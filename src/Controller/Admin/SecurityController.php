@@ -13,14 +13,9 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class SecurityController extends AbstractController
 {
      #[Route('/login', name: 'admin_login')]
-    public function login(UserRepository $userRepository, 
-    EntityManagerInterface $em, 
-    UserPasswordHasherInterface $pass, 
-    AuthenticationUtils $authenticationUtils):Response
+    public function login(AuthenticationUtils $authenticationUtils):Response
     {
-        $user = $userRepository->findOneBy(['email'=> 'ina@zaoui.com']);
-        $user->setPassword($pass->hashPassword($user, '123'));
-        $em->flush();
+       
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
         return $this->render('security/login.html.twig', [
