@@ -28,13 +28,15 @@
 						</li>
 						{% if is_granted('IS_AUTHENTICATED_FULLY') %}
 							<li class="nav-item">
-								<a class="nav-link" href="{{ path('admin_media_index') }}">
-									Dashboard
-								</a>
+								<a class="nav-link" href="{{ path('admin_media_index') }}">Dashboard</a>
 							</li>
 						{% endif %}
 						<li class="nav-item">
-							<a class="nav-link" href="{{ path('admin_login') }}">Connexion</a>
+							{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+								<a class="nav-link" href="{{ path('app_logout') }}">Déconnexion</a>
+							{% else %}
+								<a class="nav-link" href="{{ path('admin_login') }}">Connexion</a>
+							{% endif %}
 						</li>
 					</ul>
 				</div>
@@ -43,14 +45,14 @@
 	</header>
 	<main>
 		<div class="container mt-3">
-            {% for label, messages in app.flashes %}
-						{% for message in messages %}
-							<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
-								{{ message }}
-								<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-							</div>
-						{% endfor %}
+			{% for label, messages in app.flashes %}
+				{% for message in messages %}
+					<div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+						{{ message }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+					</div>
 				{% endfor %}
+			{% endfor %}
 		</div>
 		<div class="container py-4">
 			{% block front %}{% endblock %}
