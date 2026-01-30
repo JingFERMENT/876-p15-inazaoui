@@ -22,23 +22,14 @@ class HomeController extends AbstractController
     }
 
     #[Route('/guests', name: 'guests')]
-    public function guests(Request $request, UserRepository $userRepository)
+    public function guests(UserRepository $userRepository)
     {
-        $criteria = [];
-
-        $page = $request->query->getInt('page', 1);
-        $limit = 6;
-        $offset = $limit * ($page - 1);
         $onlyActive = true;
 
-        $guests = $userRepository->findGuests($limit, $offset, $onlyActive);
-        $total = $userRepository->count($criteria);
-        
+        $guests = $userRepository->findGuests($onlyActive);
+      
         return $this->render('front/guests.html.twig', [
             'guests' => $guests,
-            'total' => $total,
-            'limit' => $limit,
-            'page'=> $page
         ]);
     }
 
@@ -60,7 +51,6 @@ class HomeController extends AbstractController
         $albums = $albumsRepo->findAll();
 
         $user = $security->getUser();
-        // dd($user);
 
         if (!$user) {
             throw $this->createAccessDeniedException('Vous devez vous identifier.');;
