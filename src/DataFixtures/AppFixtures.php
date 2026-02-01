@@ -19,25 +19,46 @@ class AppFixtures extends Fixture
             'roles' => ['ROLE_ADMIN'],
         ]);
 
-        // guest
-        $guests = UserFactory::createMany(10);
+        // blocked guest
+        UserFactory::createOne([
+            'name' => 'Block guest',
+            'email' => 'blockedGuest@test.com',
+            'roles' => ['ROLE_GUEST'],
+            'isActive' => false,
+        ]);
+
+        // active guest
+        $activeGuest = UserFactory::createOne([
+            'name' => 'Active guest',
+            'email' => 'activeGuest@test.com',
+            'roles' => ['ROLE_GUEST'],
+            'isActive' => true,
+        ]);
+
+        // random active guests
+        $randomActiveGuests = UserFactory::createMany(8, ([
+            'roles' => ['ROLE_GUEST'],
+            'isActive' => true,
+        ]));
+
+        $allActiveGuests = array_merge([$activeGuest], $randomActiveGuests);
 
         // album 1...5
         $albums = [];
-        for($i = 1; $i<= 5; $i++){
-            $albums []= AlbumFactory::createOne(['name'=> 'Album '. $i]);
+        for ($i = 1; $i <= 5; $i++) {
+            $albums[] = AlbumFactory::createOne(['name' => 'Album ' . $i]);
         };
 
         // each media has a user, but 50% times has a media
-        MediaFactory::createMany(100,function() use ($guests, $albums){
-            $hasAlbum = random_int(1,10) <= 5;
+        MediaFactory::createMany(100, function () use ($allActiveGuests, $albums) {
+            $hasAlbum = random_int(1, 10) <= 5;
 
             return [
-                'user' => $guests[array_rand($guests)],
+                'user' => $allActiveGuests[array_rand($allActiveGuests)],
                 'album' => $hasAlbum ? $albums[array_rand($albums)] : null,
             ];
         });
-        
+
         $manager->flush();
     }
 }

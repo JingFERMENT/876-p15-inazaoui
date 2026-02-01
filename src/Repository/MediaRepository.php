@@ -29,7 +29,7 @@ class MediaRepository extends ServiceEntityRepository
             'SELECT m.id FROM media m
             INNER JOIN "user" u ON u.id = m.user_id 
             WHERE u.is_active = true 
-            AND u.roles @> :guest::jsonb
+            AND ((u.roles::jsonb) @> :guest::jsonb)
             ORDER BY m.id ASC',
             ['guest' => '["ROLE_GUEST"]']
         );

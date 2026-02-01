@@ -45,7 +45,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $connection = $this->getEntityManager()->getConnection();
 
         $ids = $connection->fetchFirstColumn(
-            'SELECT id FROM "user" WHERE NOT (roles @> :admin::jsonb)',
+            'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
 
@@ -58,6 +58,33 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->andWhere('u.isActive = true')
             ->setParameter('ids', $ids)
             ->orderBy('u.id', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+      public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
+    {
+        $connection = $this->getEntityManager()->getConnection();
+
+        $ids = $connection->fetchFirstColumn(
+            'SELECT id FROM "user" WHERE NOT (roles @> :admin::jsonb)',
+            ['admin' => '["ROLE_ADMIN"]']
+        );
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('u.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('u.id', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+
+        if ($onlyActive) {
+            $qb->andWhere('u.isActive = true');
+        }
 
         return $qb->getQuery()->getResult();
     }
