@@ -6,9 +6,9 @@
             <h3 class="mb-5">Invités</h3>
             <div class="guests d-flex flex-column">
                 {% for guest in guests %}
-                    <div class="guest py-5 d-flex justify-content-between align-items-center">
+                    <div class="guest py-5 d-flex justify-content-between align-items-center" data-guest-id="{{ guest.id}}">
                         <h4>{{ guest.name }} ({{ guest.medias|length }})</h4>
-                        <a href="{{ path('guest', {id: guest.id}) }}" data-test-id="discover-link">découvrir</a>
+                        <a href="{{ path('guest', {id: guest.id}) }}" >découvrir</a>
                     </div>
                 {% endfor %}
             </div>
