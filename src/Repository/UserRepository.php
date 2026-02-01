@@ -40,7 +40,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findGuests(bool $onlyActive = false): array
+    public function findForActiveGuests(): array
     {
         $connection = $this->getEntityManager()->getConnection();
 
@@ -55,37 +55,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')
+            ->andWhere('u.isActive = true')
             ->setParameter('ids', $ids)
             ->orderBy('u.id', 'ASC');
 
-        if ($onlyActive) {
-            $qb->andWhere('u.isActive = true');
-        }
-
         return $qb->getQuery()->getResult();
     }
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

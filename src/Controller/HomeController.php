@@ -24,9 +24,7 @@ class HomeController extends AbstractController
     #[Route('/guests', name: 'guests')]
     public function guests(UserRepository $userRepository)
     {
-        $onlyActive = true;
-
-        $guests = $userRepository->findGuests($onlyActive);
+        $guests = $userRepository->findForActiveGuests();
       
         return $this->render('front/guests.html.twig', [
             'guests' => $guests,
@@ -55,9 +53,10 @@ class HomeController extends AbstractController
         if (!$user) {
             throw $this->createAccessDeniedException('Vous devez vous identifier.');;
         }
+        
         $medias = $album
             ? $mediasRepo->findByAlbum($album)
-            : $mediasRepo->findByUser($user);
+            : $mediasRepo->findForActiveGuests();
 
         return $this->render('front/portfolio.html.twig', [
             'albums' => $albums,
