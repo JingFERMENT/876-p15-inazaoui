@@ -48,10 +48,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
-
-        if ($ids === []) {
-            return [];
-        }
         
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')
@@ -70,10 +66,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             'SELECT id FROM "user" WHERE NOT (roles @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
-
-        if ($ids === []) {
-            return [];
-        }
 
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')

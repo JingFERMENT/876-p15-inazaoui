@@ -5,7 +5,7 @@ namespace App\Tests\Functional\Front;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class GuestpageTest extends WebTestCase
+final class GuestspageTest extends WebTestCase
 {
 
     public function testGuestsPageListsGuestsWithDiscoverLinks(): void

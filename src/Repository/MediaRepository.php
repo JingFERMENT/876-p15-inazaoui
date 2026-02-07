@@ -34,10 +34,6 @@ class MediaRepository extends ServiceEntityRepository
             ['guest' => '["ROLE_GUEST"]']
         );
 
-        if ($ids === []) {
-            return [];
-        }
-
         return $this->createQueryBuilder('m')
             ->andWhere('m.id IN (:ids)')
             ->setParameter('ids', $ids)
