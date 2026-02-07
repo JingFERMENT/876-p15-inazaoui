@@ -2,7 +2,6 @@
 
 namespace App\Tests\Functional\Front;
 
-use App\Entity\Album;
 use App\Repository\AlbumRepository;
 use App\Repository\MediaRepository;
 use App\Repository\UserRepository;
