@@ -106,7 +106,7 @@ final class GuestController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/admin/guest/{id}/disable', name: 'admin_guest_disable', methods: ['POST'])]
+    #[Route('/admin/guest/disable/{id}', name: 'admin_guest_disable', methods: ['POST'])]
     public function disable(User $guest, Request $request, EntityManagerInterface $em): Response
     {
         if (!$this->isCsrfTokenValid('guest_disable_' . $guest->getId(), (string) $request->request->get('_token'))) {
@@ -119,7 +119,7 @@ final class GuestController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/admin/guest/{id}/enable', name: 'admin_guest_enable', methods: ['POST'])]
+    #[Route('/admin/guest/enable/{id}', name: 'admin_guest_enable', methods: ['POST'])]
     public function enable(User $guest, Request $request, EntityManagerInterface $em): Response
     {
         if (!$this->isCsrfTokenValid('guest_enable_' . $guest->getId(), (string) $request->request->get('_token'))) {
@@ -132,7 +132,7 @@ final class GuestController extends AbstractController
     }
 
     #[IsGranted('ROLE_ADMIN')]
-    #[Route('/admin/guest/{id}/delete', name: 'admin_guest_delete', methods: ['POST'])]
+    #[Route('/admin/guest/delete/{id}', name: 'admin_guest_delete', methods: ['POST'])]
     public function delete(User $guest, Request $request, EntityManagerInterface $em): Response
     {
         if (!$this->isCsrfTokenValid('guest_delete_' . $guest->getId(), (string) $request->request->get('_token'))) {

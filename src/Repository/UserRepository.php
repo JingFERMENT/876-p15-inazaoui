@@ -63,7 +63,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $connection = $this->getEntityManager()->getConnection();
 
         $ids = $connection->fetchFirstColumn(
-            'SELECT id FROM "user" WHERE NOT (roles @> :admin::jsonb)',
+            'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
 

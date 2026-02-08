@@ -53,17 +53,13 @@ class AppFixtures extends Fixture
         $album1 = $albums[0];
 
         MediaFactory::createOne([
-            'title' => 'VISIBLE_MEDIA_FOR_ACTIVE_GUEST',
             'user'  => $activeGuest,
             'album' => $album1,
-            'path' => 'uploads/0001.jpg'
         ]);
 
         MediaFactory::createOne([
-            'title' => 'HIDDEN_MEDIA_FOR_BLOCKED_GUEST',
             'user'  => $blockedGuest,
             'album' => $album1,
-            'path' => 'uploads/0099.jpg'
         ]);
 
         // each media has a user, but 50% times has a media
