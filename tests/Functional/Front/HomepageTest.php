@@ -26,7 +26,7 @@ final class HomepageTest extends WebTestCase
         $this->assertSelectorNotExists('nav a:contains("Dashboard")');
 
         
-        $link = $client->getCrawler()->selectLink('découvrir')->link();
+       $link = $client->getCrawler()->filter('[data-test-id="discover-link"]')->link();
       
         $client->click($link);
         $this->assertResponseRedirects('/login');
@@ -38,13 +38,14 @@ final class HomepageTest extends WebTestCase
 
         $client = static::createClient();
 
-        /** @var UserRepository $users */
-        $users = static::getContainer()->get(UserRepository::class);
+        /** @var UserRepository $guests */
+        $guests= static::getContainer()->get(UserRepository::class);
 
-        $user = $users->findOneBy(['email' => 'zreinger@example.com']);
-        $this->assertNotNull($user, "L'invité n'est pas trouvé dans la base des données");
+        $activeGuest = $guests->findOneBy(['email' => 'activeGuest@test.com']);
+      
+        $this->assertNotNull($activeGuest, "L'invité n'est pas trouvé dans la base des données");
 
-        $client->loginUser($user);
+        $client->loginUser($activeGuest);
 
         $client->request('GET', '/');
         $this->assertResponseIsSuccessful();
@@ -53,11 +54,11 @@ final class HomepageTest extends WebTestCase
         $this->assertSelectorExists('nav a:contains("Dashboard")');
         $this->assertSelectorExists('nav a:contains("Déconnexion")');
 
-        $link = $client->getCrawler()->selectLink('découvrir')->link();
-       
+        $link = $client->getCrawler()->filter('[data-test-id="discover-link"]')->link();
         $client->click($link);
         $this->assertResponseIsSuccessful();
         $this->assertSame('/portfolio', $client->getRequest()->getPathInfo());
 
     }
+
 }

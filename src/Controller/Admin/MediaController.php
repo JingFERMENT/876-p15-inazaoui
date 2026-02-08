@@ -25,7 +25,7 @@ class MediaController extends AbstractController
 
         $limit = 8;
         $offset = 8 * ($page - 1);
-        
+
         $medias = $media->findBy(
             $criteria,
             ['id' => 'ASC'],
@@ -64,12 +64,21 @@ class MediaController extends AbstractController
         return $this->render('admin/media/add.html.twig', ['form' => $form->createView()]);
     }
 
-    #[Route('/admin/media/delete/{id}', name: 'admin_media_delete')]
-    public function delete(Media $media, EntityManagerInterface $em)
+    #[Route('/admin/media/delete/{id}', name: 'admin_media_delete', methods: ['POST'])]
+    public function delete(Media $media, Request $request, EntityManagerInterface $em)
     {
+
+        if (!$this->isCsrfTokenValid('media_delete_' . $media->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
         $em->remove($media);
+
         $em->flush();
-        unlink($media->getPath());
+
+        if (is_file($media->getPath())) {
+            unlink($media->getPath());
+        }
 
         return $this->redirectToRoute('admin_media_index');
     }

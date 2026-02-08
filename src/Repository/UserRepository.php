@@ -40,23 +40,39 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findGuests(bool $onlyActive = false): array
+    public function findForActiveGuests(): array
     {
         $connection = $this->getEntityManager()->getConnection();
 
         $ids = $connection->fetchFirstColumn(
-            'SELECT id FROM "user" WHERE NOT (roles @> :admin::jsonb)',
+            'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
-
-        if ($ids === []) {
-            return [];
-        }
         
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')
+            ->andWhere('u.isActive = true')
             ->setParameter('ids', $ids)
             ->orderBy('u.id', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+      public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
+    {
+        $connection = $this->getEntityManager()->getConnection();
+
+        $ids = $connection->fetchFirstColumn(
+            'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
+            ['admin' => '["ROLE_ADMIN"]']
+        );
+
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('u.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('u.id', 'ASC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
 
         if ($onlyActive) {
             $qb->andWhere('u.isActive = true');
@@ -64,28 +80,4 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         return $qb->getQuery()->getResult();
     }
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
