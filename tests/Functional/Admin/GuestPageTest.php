@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class GuestPageTest extends WebTestCase
 {
@@ -97,10 +96,8 @@ class GuestPageTest extends WebTestCase
         $client = static::createClient();
         $container = static::getContainer();
         $em = $container->get(EntityManagerInterface::class);
-        $hasher = $container->get(UserPasswordHasherInterface::class);
 
         $guest = new User();
-
         $guest->setEmail('test@test.com');
         $guest->setName('testSetPwd');
         $guest->setRoles(['ROLE_USER']);
@@ -112,9 +109,8 @@ class GuestPageTest extends WebTestCase
         $em->persist($guest);
         $em->flush();
 
-        $crawler = $client->request('GET', '/set-password/'.$token);
+        $client->request('GET', '/set-password/'.$token);
         $this->assertResponseIsSuccessful();
-
         $this->assertSelectorExists('form');
 
         $client->submitForm('Activer ton compte', [
