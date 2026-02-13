@@ -6,19 +6,16 @@ use App\Entity\User;
 use App\Form\GuestType;
 use App\Form\SetPasswordType;
 use App\Repository\UserRepository;
+use App\Service\GuestInvitationService;
 use Doctrine\ORM\EntityManagerInterface;
 use DateTimeImmutable;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\String\ByteString;
 
 
 final class GuestController extends AbstractController
@@ -53,52 +50,15 @@ final class GuestController extends AbstractController
     #[Route('/admin/guest/add', name: 'admin_guest_add')]
     public function add(
         Request $request,
-        EntityManagerInterface $em,
-        MailerInterface $mailer
+        GuestInvitationService $guestInvitationService
     ) {
         $guest = new User();
         $form = $this->createForm(GuestType::class, $guest);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $guest->setRoles(['ROLE_USER']);
-            $guest->setIsActive(false);
-
-            // generate token + expiration 
-            $invitationToken = ByteString::fromRandom(32)->toString();
-            $guest->setInvitationToken($invitationToken);
-
-            $guest->setInvitationExpiredAt(new DateTimeImmutable('+ 2 days'));
-
-            $em->persist($guest);
-            $em->flush();
-
-            // prepare the link
-            $invitationUrl = $this->generateUrl(
-                'guest_set_password', // route name
-                ['invitationToken' => $invitationToken], // parameter in the route
-                UrlGeneratorInterface::ABSOLUTE_URL
-            );
-
-            $siteUrl = $this->generateUrl('home', [], UrlGeneratorInterface::ABSOLUTE_URL);
-
-            // prepare email
-            $email = (new TemplatedEmail())
-                ->from(new Address('no-reply@zaoui.com', 'Ina Zaoui'))
-                ->to(new Address($guest->getEmail(), $guest->getName()))
-                ->subject('Invitation Ina Zaoui - Activer ton compte')
-                ->htmlTemplate('/email/invitation.html.twig')
-                ->context([
-                    'guestName' => $guest->getName(),
-                    'invitationUrl' => $invitationUrl,
-                    'siteUrl' => $siteUrl,
-                    'expiredAt' => 48,
-                ]);
-
-            $mailer->send($email);
-
+            $guestInvitationService->invite($guest);
             $this->addFlash('success', 'Invité ajouté avec succès. L\'email d’activation est envoyé.');
-
             return $this->redirectToRoute('admin_guest_index');
         }
 
@@ -144,24 +104,37 @@ final class GuestController extends AbstractController
         return $this->redirectToRoute('admin_guest_index');
     }
 
-    #[Route('/set-password/{invitationToken}', name: 'guest_set_password')]
+    #[Route('/set-password/{invitationToken}', 
+        name: 'guest_set_password', 
+        methods:['GET', 'POST'],
+        requirements:['invitationToken' => '[A-Fa-f0-9]{64}']
+    )]
     public function setGuestPassword(
-        String $invitationToken,
+        string $invitationToken,
         Request $request,
         EntityManagerInterface $em,
         UserRepository $guestRepo,
         UserPasswordHasherInterface $guestPasswordHasher,
+        ClockInterface $clock
     ) {
         // check if invitationToken exist + expiredAt exist + < now 
         $guest = $guestRepo->findOneBy(['invitationToken' => $invitationToken]);
 
+        $now = $clock->now();
+
         if (
             !$guest
             || !$guest->getInvitationExpiredAt()
-            || $guest->getInvitationExpiredAt() < new DateTimeImmutable()
+            || $guest->getInvitationExpiredAt() < $now
         ) {
             $this->addFlash('danger', 'Invitation invalide ou expirée.');
+            return $this->redirectToRoute('app_login'); 
         
+        }
+
+        if($guest->isActive()) {
+             $this->addFlash('danger', 'Ton compte est déjà activé.');
+             return $this->redirectToRoute('app_login');
         }
 
         $form = $this->createForm(SetPasswordType::class, $guest);
@@ -175,12 +148,12 @@ final class GuestController extends AbstractController
             $guest->setIsActive(true);
             $guest->setInvitationExpiredAt(null);
             $guest->setInvitationToken(null);
-            $em->persist($guest);
+            
             $em->flush();
 
             $this->addFlash('success', 'Activation réussie ! Tu peux te connecter sur le site.');
             
-            return $this->redirectToRoute('home');
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('security/set-password.html.twig', [
