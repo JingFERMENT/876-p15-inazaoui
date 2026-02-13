@@ -2,7 +2,7 @@
 
 namespace App\Security;
 
-interface invitationTokenGeneratorInterface {
+interface InvitationTokenGeneratorInterface {
     
     public function generate(int $bytes = 32): string;
 

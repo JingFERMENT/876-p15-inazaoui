@@ -2,7 +2,7 @@
 
 namespace App\Security;
 
-final class invitationTokenGenerator implements invitationTokenGeneratorInterface
+final class InvitationTokenGenerator implements InvitationTokenGeneratorInterface
 {
     
     public function generate(int $bytes = 32): string {

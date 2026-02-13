@@ -2,10 +2,14 @@
 
 namespace App\Tests\Functional\Admin;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
+use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class GuestPageTest extends WebTestCase
 {
@@ -88,9 +92,50 @@ class GuestPageTest extends WebTestCase
         $this->assertResponseIsSuccessful();
     }
 
-    // public function testAddGuestValidSubmitsPersistsAndSendsEmail(){
+    public function testSetPasswordPageRendersAndActivateGuests(){
 
-    // }
+        $client = static::createClient();
+        $container = static::getContainer();
+        $em = $container->get(EntityManagerInterface::class);
+        $hasher = $container->get(UserPasswordHasherInterface::class);
+
+        $guest = new User();
+
+        $guest->setEmail('test@test.com');
+        $guest->setName('testSetPwd');
+        $guest->setRoles(['ROLE_USER']);
+        $guest->setIsActive(false);
+
+        $token = bin2hex(random_bytes(32));
+        $guest->setInvitationToken($token);
+        $guest->setInvitationExpiredAt(new DateTimeImmutable('+2 days'));
+        $em->persist($guest);
+        $em->flush();
+
+        $crawler = $client->request('GET', '/set-password/'.$token);
+        $this->assertResponseIsSuccessful();
+
+        $this->assertSelectorExists('form');
+
+        $client->submitForm('Activer ton compte', [
+            'set_password[plainPassword][first]' => 'Password123@',
+            'set_password[plainPassword][second]' => 'Password123@',
+        ]);
+
+        $this->assertResponseRedirects('/');
+
+        $em->clear(); // reload from DB
+
+        $reloaded = $em->getRepository(User::class)->findOneBy(['email' => 'test@test.com']);
+
+        $this->assertNotNull($reloaded);
+
+        $this->assertTrue($reloaded->isActive());
+        $this->assertNull($reloaded->getInvitationExpiredAt());
+        $this->assertNull($reloaded->getInvitationToken());
+
+    }
+    
 
     
 }

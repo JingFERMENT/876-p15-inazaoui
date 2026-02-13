@@ -71,12 +71,11 @@ class AlbumPageTest extends WebTestCase
         $deleteNodes = $crawler->filter('a.btn[href^="/admin/album/delete/"]');
         $this->assertGreaterThan(0, $deleteNodes->count(), "Pas d'album à supprimer");
 
-        $deleteFirstlink = $updateNodes->first()->link();
-        $deleteFirstHref = $updateNodes->first()->attr('href');
+        $deleteFirstlink = $deleteNodes->first()->link();
         $client->click($deleteFirstlink);
+        $this->assertResponseRedirects('/admin/album'); 
+        $client->followRedirect();
         $this->assertResponseIsSuccessful();
-        $this->assertSame($deleteFirstHref, $client->getRequest()->getPathInfo());
-
     }
 
 }

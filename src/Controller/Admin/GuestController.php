@@ -117,24 +117,13 @@ final class GuestController extends AbstractController
         UserPasswordHasherInterface $guestPasswordHasher,
         ClockInterface $clock
     ) {
-        // check if invitationToken exist + expiredAt exist + < now 
-        $guest = $guestRepo->findOneBy(['invitationToken' => $invitationToken]);
-
-        $now = $clock->now();
-
-        if (
-            !$guest
-            || !$guest->getInvitationExpiredAt()
-            || $guest->getInvitationExpiredAt() < $now
-        ) {
-            $this->addFlash('danger', 'Invitation invalide ou expirée.');
-            return $this->redirectToRoute('app_login'); 
         
-        }
+        $now = $clock->now();
+        $guest = $guestRepo->findValidInvitation($invitationToken, $now);
 
-        if($guest->isActive()) {
-             $this->addFlash('danger', 'Ton compte est déjà activé.');
-             return $this->redirectToRoute('app_login');
+        if (!$guest) {
+            $this->addFlash('danger', 'Invitation invalide ou expirée.');
+            return $this->redirectToRoute('home'); 
         }
 
         $form = $this->createForm(SetPasswordType::class, $guest);
@@ -153,7 +142,7 @@ final class GuestController extends AbstractController
 
             $this->addFlash('success', 'Activation réussie ! Tu peux te connecter sur le site.');
             
-            return $this->redirectToRoute('app_login');
+            return $this->redirectToRoute('home');
         }
 
         return $this->render('security/set-password.html.twig', [
