@@ -56,7 +56,7 @@ class MediaController extends AbstractController
 
             $filename = md5(uniqid()) . '.' . $media->getFile()->guessExtension();
             $media->setPath('uploads/' .$filename );
-            $media->getFile()->move('uploads/', $filename);
+            $media->getFile()->move('public/uploads/', $filename);
             $em->persist($media);
             $em->flush();
 

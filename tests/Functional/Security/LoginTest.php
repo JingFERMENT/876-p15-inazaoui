@@ -3,15 +3,14 @@
 namespace App\Tests\Functional\Security;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\BaseWebTestCase;
 
-class LoginTest extends WebTestCase
+class LoginTest extends BaseWebTestCase
 {
     // test page rendered correctly
     public function testLoginPageShouldRender(): void
     {
-        $client = static::createClient();
-        $crawler = $client->request('GET', '/login');
+        $this->get('/login');
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorTextContains('h1', 'Connexion');
@@ -25,19 +24,17 @@ class LoginTest extends WebTestCase
     #[DataProvider('provideInvalidLogins')]
     public function testLoginFails(string $username, string $password, string $expectedErrorContains):void 
     {
-        
-        $client = static::createClient();
-        $client->request('GET', '/login');
+        $this->get('/login');
 
         $this->assertResponseIsSuccessful();
         
-        $client->submitForm('Connexion', [ 
+        $this->client->submitForm('Connexion', [ 
             '_username' => $username,
             '_password' => $password,
         ]);
 
         $this->assertResponseRedirects('/login');
-        $client->followRedirect();
+        $this->client->followRedirect();
 
         $this->assertAnySelectorTextContains('.alert-danger', $expectedErrorContains);
     }
