@@ -2,14 +2,13 @@
 
 namespace App\Tests\Functional\Front;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Tests\BaseWebTestCase;
 
-class AboutPageTest extends WebTestCase
+class AboutPageTest extends BaseWebTestCase
 {
     public function testAboutPageIsSuccessfulAndShowContents(): void
     {
-        $client = static::createClient();
-        $crawler = $client->request('GET', '/about');
+        $crawler = $this->get('/about');
 
         $this->assertResponseIsSuccessful();
 

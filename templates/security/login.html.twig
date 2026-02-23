@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block auth_form %}
-	<form method="post" action="{{ path('admin_login') }}">
+	<form method="post" action="{{ path('app_login') }}">
 		<div class="mb-3">
 			<label for="email" class="form-label">Email</label>
 			<input type="email" class="form-control" id="email" name="_username" value="{{ last_username }}" required>

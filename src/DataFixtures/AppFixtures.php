@@ -62,13 +62,12 @@ class AppFixtures extends Fixture
             'album' => $album1,
         ]);
 
-        // each media has a user, but 50% times has a media
+        // each media has a user, but 50% times has an album
         MediaFactory::createMany(100, function () use ($allGuests, $albums) {
-            $hasAlbum = random_int(1, 10) <= 5;
 
             return [
                 'user' => $allGuests[array_rand($allGuests)],
-                'album' => $hasAlbum ? $albums[array_rand($albums)] : null,
+                'album' => $albums[array_rand($albums)],
             ];
         });
 

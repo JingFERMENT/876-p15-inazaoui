@@ -150,7 +150,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->medias->contains($media)) {
             $this->medias->add($media);
-            $media->setUser($this); // synchronise le côté propriétaire
+            $media->setUser($this); 
         }
 
         return $this;
@@ -159,7 +159,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeMedia(Media $media): static
     {
         if ($this->medias->removeElement($media)) {
-            
+            if($media->getUser() === $this) {
+            $media->setUser(null);
+        }  
         }
 
         return $this;

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -48,7 +49,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
             ['admin' => '["ROLE_ADMIN"]']
         );
-        
+
         $qb = $this->createQueryBuilder('u')
             ->andWhere('u.id IN (:ids)')
             ->andWhere('u.isActive = true')
@@ -58,7 +59,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $qb->getQuery()->getResult();
     }
 
-      public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
+    public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
     {
         $connection = $this->getEntityManager()->getConnection();
 
@@ -74,10 +75,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setMaxResults($limit)
             ->setFirstResult($offset);
 
-        if ($onlyActive) {
-            $qb->andWhere('u.isActive = true');
-        }
-
         return $qb->getQuery()->getResult();
+    }
+
+
+    public function findValidInvitation(string $token, DateTimeImmutable $now):?User
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.invitationToken = :token')
+            ->andWhere('u.invitationExpiredAt IS NOT NULL')
+            ->andWhere('u.invitationExpiredAt >= :now')
+            ->andWhere('u.isActive = false')
+            ->setParameter('token', $token)
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
