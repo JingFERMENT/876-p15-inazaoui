@@ -41,22 +41,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findForActiveGuests(): array
+    public function findForActiveGuestsWithMediaCount(): array
     {
-        $connection = $this->getEntityManager()->getConnection();
+        $conn = $this->getEntityManager()->getConnection();
 
-        $ids = $connection->fetchFirstColumn(
-            'SELECT id FROM "user" u WHERE NOT ((u.roles::jsonb) @> :admin::jsonb)',
-            ['admin' => '["ROLE_ADMIN"]']
-        );
+        $sql = "SELECT u.id,u.name,COUNT(m.id) AS mediaCount FROM \"user\" u
+        LEFT JOIN media m ON m.user_id = u.id
+        WHERE u.is_active = TRUE
+        AND NOT (u.roles::jsonb @> :admin::jsonb)
+        GROUP BY u.id, u.name
+        ORDER BY u.id ASC";
 
-        $qb = $this->createQueryBuilder('u')
-            ->andWhere('u.id IN (:ids)')
-            ->andWhere('u.isActive = true')
-            ->setParameter('ids', $ids)
-            ->orderBy('u.id', 'ASC');
-
-        return $qb->getQuery()->getResult();
+        return $conn->fetchAllAssociative($sql, [
+            'admin' => '["ROLE_ADMIN"]',
+        ]);
     }
 
     public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
@@ -79,7 +77,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
 
-    public function findValidInvitation(string $token, DateTimeImmutable $now):?User
+    public function findValidInvitation(string $token, DateTimeImmutable $now): ?User
     {
         return $this->createQueryBuilder('u')
             ->andWhere('u.invitationToken = :token')

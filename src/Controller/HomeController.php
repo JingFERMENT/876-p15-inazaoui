@@ -11,7 +11,10 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class HomeController extends AbstractController
 {
@@ -22,17 +25,20 @@ class HomeController extends AbstractController
     }
 
     #[Route('/guests', name: 'guests')]
-    public function guests(UserRepository $userRepository)
+    public function guests(UserRepository $userRepository, CacheInterface $cache)
     {
-        $guests = $userRepository->findForActiveGuests();
-      
+        $guests = $cache->get('guests_with_media_count', function (ItemInterface $item) use ($userRepository) {
+            $item->expiresAfter(300);
+            return $userRepository->findForActiveGuestsWithMediaCount();
+        });
+
         return $this->render('front/guests.html.twig', [
             'guests' => $guests,
         ]);
     }
 
-    #[Route('/guest/{id}', name: 'guest')]
-    public function guest(#[MapEntity(id: 'id')] User $guest)
+    #[Route('/guest/{id}', name: 'guest', requirements: ['id' => '\d+'])]
+    public function guest(#[MapEntity(id: 'id')] User $guest): Response
     {
         return $this->render('front/guest.html.twig', [
             'guest' => $guest
@@ -51,9 +57,9 @@ class HomeController extends AbstractController
         $user = $security->getUser();
 
         if (!$user) {
-            throw $this->createAccessDeniedException('Vous devez vous identifier.');;
+            throw $this->createAccessDeniedException('Vous devez vous identifier.');
         }
-        
+
         $medias = $album
             ? $mediasRepo->findByAlbum($album)
             : $mediasRepo->findForActiveGuests();
