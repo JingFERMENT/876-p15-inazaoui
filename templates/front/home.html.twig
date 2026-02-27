@@ -3,7 +3,12 @@
 {% block front %}
     <div class="row align-items-stretch">
         <div class="col-6">
-            <img src="{{ asset('images/home.jpeg') }}" alt="Ina Zaoui" class="home-img w-100">
+            <picture>
+                <source srcset="{{ 'images/home.jpeg' | imagine_filter('thumb_600_webp')}}" type="image/webp">
+			    <img src="{{ 'images/home.jpeg'| imagine_filter('thumb_600_jpg_82') }}" 
+                alt="Ina Zaoui" class="home-img w-100" loading="eager" decoding="async" fetchpriority="high"
+                >
+            </picture>
         </div>
         <div class="col-6">
             <div class="d-flex flex-column justify-content-center align-items-end h-100 gap-3">

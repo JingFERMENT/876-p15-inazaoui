@@ -37,6 +37,7 @@ class HomeController extends AbstractController
         ]);
     }
 
+
     #[Route('/guest/{id}', name: 'guest', requirements: ['id' => '\d+'])]
     public function guest(#[MapEntity(id: 'id')] User $guest): Response
     {
@@ -50,6 +51,7 @@ class HomeController extends AbstractController
         AlbumRepository $albumsRepo,
         MediaRepository $mediasRepo,
         Security $security,
+        CacheInterface $cache,
         #[MapEntity(id: 'id')] ?Album $album = null,
     ) {
         $albums = $albumsRepo->findAll();
@@ -60,9 +62,23 @@ class HomeController extends AbstractController
             throw $this->createAccessDeniedException('Vous devez vous identifier.');
         }
 
-        $medias = $album
-            ? $mediasRepo->findByAlbum($album)
-            : $mediasRepo->findForActiveGuests();
+        $albums = $cache->get('portfolio_albums', function (ItemInterface $item) use ($albumsRepo) {
+            $item->expiresAfter(3600);
+            return $albumsRepo->findAll();
+        });
+
+        $albumId = $album?->getId() ?? 0;
+        $userId = method_exists($user, 'getId') ? $user->getId() : 0;
+
+        $cacheKey = sprintf('portfolio_medias_user_%s_album_%s', $userId, $albumId);
+
+        $medias = $cache->get($cacheKey, function (ItemInterface $item) use ($mediasRepo, $album) {
+            $item->expiresAfter(300); // 5 min
+
+            return $album
+                ? $mediasRepo->findByAlbum($album)
+                : $mediasRepo->findForActiveGuests();
+        });
 
         return $this->render('front/portfolio.html.twig', [
             'albums' => $albums,

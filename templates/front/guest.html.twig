@@ -1,20 +1,24 @@
 {% extends 'front.html.twig' %}
 
 {% block front %}
-    <div class="row">
-        <div class="col-12">
-            <h3 class="mb-4">{{ guest.name }}</h3>
-            <p class="mb-5 w-100">{{ guest.description }}</p>
-            <div class="row">
-                {% for media in guest.medias %}
-                    <div class="col-4 media mb-4">
-                        <img class="w-100" src="{{ asset(media.path) }}" alt="{{ media.title }}" 
-                        loading="lazy"
-                        decoding="async">
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
+	<div class="row">
+		<div class="col-12">
+			<h3 class="mb-4">{{ guest.name }}</h3>
+			<p class="mb-5 w-100">{{ guest.description }}</p>
+			<div class="row">
+				{% for media in guest.medias %}
+					{% set isFirst = loop.first %}
+					<div class="col-4 media mb-4">
+						<picture>
+							<source srcset="{{ media.path|imagine_filter('thumb_400_webp') }}" type="image/webp">
+							<img class="w-100" src="{{ asset(media.path) }}" alt="{{ media.title }}" 
+							loading="{{ isFirst ? 'eager' : 'lazy' }}" 
+							fetchpriority="{{ isFirst ? 'high' : 'auto' }}" decoding="async"
+							width="400" height="400">
+						</picture>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
 {% endblock %}
-
