@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -41,7 +42,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
-    public function findForActiveGuestsWithMediaCount(): array
+    public function findForActiveGuestsWithMediaCount(int $limit, int $offset): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
@@ -50,11 +51,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         WHERE u.is_active = TRUE
         AND NOT (u.roles::jsonb @> :admin::jsonb)
         GROUP BY u.id, u.name
-        ORDER BY u.id ASC";
+        ORDER BY u.id ASC
+        LIMIT :limit 
+        OFFSET :offset";
 
-        return $conn->fetchAllAssociative($sql, [
-            'admin' => '["ROLE_ADMIN"]',
-        ]);
+        return $conn->fetchAllAssociative(
+        $sql,
+        [
+            'admin'  => '["ROLE_ADMIN"]',
+            'limit'  => $limit,
+            'offset' => $offset,
+        ],
+        [
+            'admin'  => ParameterType::STRING,
+            'limit'  => ParameterType::INTEGER,
+            'offset' => ParameterType::INTEGER,
+        ]
+    );
     }
 
     public function findGuests(int $limit, int $offset, bool $onlyActive = false): array
@@ -89,4 +102,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    
 }
